@@ -1,5 +1,6 @@
 import express from "express";
 const port = process.env.PORT || 3000;
+export const contract_adress = process.env.CONTRACT_ADRESS
 const app = express();
 import users from "./routes/users.js"; 
 

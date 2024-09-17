@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { contract_adress } from "../API";
 const __dirname = import.meta.dirname;
 
 const CatERC1155_json =
@@ -74,7 +75,7 @@ export function getCatContractAbiFromHardhat() {
 }
 
 export function getCatContractDeployedAddressFromHardhat() {
-  const jsonFile = join(__dirname, CatERC1155Deployed_json);
+  const jsonFile = join(__dirname, contract_adress);
   const catContractJson = JSON.parse(readFileSync(jsonFile).toString());
   const deployedAddress = catContractJson["CatModule#CatERC1155"];
 
