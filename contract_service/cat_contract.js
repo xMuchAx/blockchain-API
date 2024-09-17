@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { contract_adress } from "../API";
+import { contract_adress } from "../API/index.js";
 const __dirname = import.meta.dirname;
 const contact_cat_abi = [
   {
