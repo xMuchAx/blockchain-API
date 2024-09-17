@@ -1,0 +1,3 @@
+node_modules/
+blockchain_core/hardhat/cache/
+blockchain_core/hardhat/artifacts/
