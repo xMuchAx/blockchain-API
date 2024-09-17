@@ -744,10 +744,7 @@ export function getCatContractAbiFromHardhat() {
 }
 
 export function getCatContractDeployedAddressFromHardhat() {
-  const jsonFile = join(__dirname, contract_adress);
-  const catContractJson = JSON.parse(readFileSync(jsonFile).toString());
-  const deployedAddress = catContractJson["CatModule#CatERC1155"];
-
+  const deployedAddress = contract_adress;
   return deployedAddress;
 }
 
