@@ -1,8 +1,7 @@
-const ethers = require("ethers");
-
-const { readFileSync } = require("fs");
-const { join } = require("path");
-// const __dirname = import.meta.dirname;
+import { ethers } from "ethers";
+import { readFileSync } from "fs";
+import { join } from "path";
+const __dirname = import.meta.dirname;
 
 const CatERC1155_json =
   "../blockchain_core/hardhat/artifacts/contracts/cat.sol/CatERC1155.json";
@@ -16,7 +15,7 @@ const CatERC1155Deployed_json =
 
 // For read only operation on the contract
 // No need of an account to read data from the blockchain
-function getReadOnlyCatContract(
+export function getReadOnlyCatContract(
   blockchainServerUrl,
   catContractDeployedAddress
 ) {
@@ -66,7 +65,7 @@ function getCatContract(
   return contract;
 }
 
-function getCatContractAbiFromHardhat() {
+export function getCatContractAbiFromHardhat() {
   const jsonFile = join(__dirname, CatERC1155_json);
   const compiled_contract = JSON.parse(readFileSync(jsonFile).toString());
   const abi_json = compiled_contract.abi;
@@ -74,7 +73,7 @@ function getCatContractAbiFromHardhat() {
   return abi_json;
 }
 
-function getCatContractDeployedAddressFromHardhat() {
+export function getCatContractDeployedAddressFromHardhat() {
   const jsonFile = join(__dirname, CatERC1155Deployed_json);
   const catContractJson = JSON.parse(readFileSync(jsonFile).toString());
   const deployedAddress = catContractJson["CatModule#CatERC1155"];
@@ -86,7 +85,8 @@ function getCatContractDeployedAddressFromHardhat() {
 // Services provided by the Cat contract
 /////////////////////////////////////////////////////////////////////////////
 
-async function getCatTokenQuantity(blockchainServerUrl, tokenAccount, tokenId) {
+//function to get token quantity from an accout
+export async function getCatTokenQuantity(blockchainServerUrl, tokenAccount, tokenId) {
   const catContract = getReadOnlyCatContract(
     blockchainServerUrl,
     getCatContractDeployedAddressFromHardhat()
@@ -101,7 +101,8 @@ async function getCatTokenQuantity(blockchainServerUrl, tokenAccount, tokenId) {
   return tokenQuantity;
 }
 
-async function transferCatToken(
+//function to transfert token from an account to other acount
+export async function transferCatToken(
   blockchainServerUrl,
   ownerPrivateKey,
   tokenAccountFrom,
@@ -125,8 +126,8 @@ async function transferCatToken(
   );
 }
 
-async function burnableCatToken(blockchainServerUrl, ownerPrivateKey, tokenAccountTo, tokenId, tokenQty) {
-  // Obtenez une instance du contrat ERC1155 avec la clé privée de l'utilisateur
+//function to burn token to an account
+export async function burnableCatToken(blockchainServerUrl, ownerPrivateKey, tokenAccountTo, tokenId, tokenQty) {
   const catContract = getCatContract(
     blockchainServerUrl,
     ownerPrivateKey,
@@ -134,7 +135,6 @@ async function burnableCatToken(blockchainServerUrl, ownerPrivateKey, tokenAccou
   );
 
   try {
-    // Brûlez le jeton spécifié
     await catContract.burn(tokenAccountTo, tokenId, tokenQty);
     
     
@@ -144,7 +144,8 @@ async function burnableCatToken(blockchainServerUrl, ownerPrivateKey, tokenAccou
   }
 }
 
-async function addToken(blockchainServerUrl,
+//function to add token from an account
+export async function addToken(blockchainServerUrl,
   ownerPrivateKey,
   tokenAccountTo,
   tokenId,
@@ -158,13 +159,4 @@ async function addToken(blockchainServerUrl,
   await catContract.mint(tokenAccountTo, tokenId, tokenQty);
 }
 
-module.exports = {
-  getCatTokenQuantity,
-  getCatContractDeployedAddressFromHardhat,
-  getCatContractAbiFromHardhat,
-  getCatContract,
-  getReadOnlyCatContract,
-  transferCatToken,
-  burnableCatToken,
-  addToken
-};
+

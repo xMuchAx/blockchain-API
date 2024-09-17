@@ -1,8 +1,7 @@
 /** @type import('hardhat/config').HardhatUserConfig */
 require("@nomicfoundation/hardhat-ignition-ethers");
 // const { BOB_PRIVATE_KEY } = require("./account.js");
-const { BOB_PRIVATE_KEY } = require("./account");
-
+import { BOB_PRIVATE_KEY } from './account';
 const GANACHE_SERVER = "http://localhost:7545";
 
 module.exports = {
@@ -15,8 +14,6 @@ module.exports = {
       url: GANACHE_SERVER,
       accounts: [
         BOB_PRIVATE_KEY,
-        // others accounts
-        // privateKey2,
       ],
     },
   },

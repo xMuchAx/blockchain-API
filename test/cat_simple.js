@@ -1,13 +1,4 @@
-const {
-  getCatContractDeployedAddressFromHardhat,
-  getCatContract,
-  getReadOnlyCatContract,
-  getCatTokenQuantity,
-  mintCatToken,
-  transferCatToken,
-  burnableCatToken,
-  addToken
-} = require("./contract_service/cat_contract.js");
+
 const {
   ALICE_PRIVATE_KEY,
   ALICE_PUBLIC_ADDRESS,

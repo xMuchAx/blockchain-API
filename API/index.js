@@ -1,13 +1,13 @@
-const express = require("express");
+import express from "express";
 const port = process.env.PORT || 3000;
 const app = express();
+import users from "./routes/users.js"; 
 
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-const users = require("./routes/users")
 
 app.use("/users", users)
 

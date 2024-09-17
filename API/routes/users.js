@@ -1,18 +1,14 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
+import {getCatTokenQuantity} from "../../contract_service/cat_contract.js"
 const LOCAL_GANACHE_SERVER = "http://localhost:7545";
-
 const CAT_TOKEN_0 = 0;
 
-const {
-    getCatTokenQuantity,
-} = require("../contract_service/cat_contract");
+//route to get all user info (ca recup que les token pour l'instant)
 router.get("/:tokenAccount", async (req, res) => {
   try {
-      // Await the promise and get the resolved values
       const AccountTokenQty =   await getCatTokenQuantity(LOCAL_GANACHE_SERVER, req.params.tokenAccount, CAT_TOKEN_0);
       
-      // Respond with the quantities
       res.status(200).json({
           Account: `this account contain: ${AccountTokenQty}`,
       });
@@ -21,4 +17,6 @@ router.get("/:tokenAccount", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
+
+
