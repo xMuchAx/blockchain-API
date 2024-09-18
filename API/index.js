@@ -5,11 +5,8 @@ const app = express();
 import users from "./routes/users.js"; 
 
 app.get("/", (req, res) => {
-  res.send("Hello World2222!");
+  res.send("Hello World222hhh2!");
 });
-
-
-
 
 app.use("/users", users)
 
