@@ -3,7 +3,7 @@ EtherJs is used to interact with the smart contracts
 
 Install all package with :
 npm install
-
+ 
 edit hardhat.config.js to specify :
 - the blockchain network you are going to connect to
 - private keys of your accounts
