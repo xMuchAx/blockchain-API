@@ -58,8 +58,32 @@ function getCatContract(
     contractRunner
   );
 
+  listenToTransferEvents(contract);
   return contract;
 }
+
+const listenToTransferEvents = (catContract) => {
+  let transferSingleCount = 0;
+
+  catContract.on("TransferSingle", (operator, from, to, id, value) => {
+    transferSingleCount++;
+    console.log(`--- TransferSingle Event #${transferSingleCount} ---`);
+    console.log(`Operator: ${operator}`);
+    console.log(`From: ${from}`);
+    console.log(`To: ${to}`);
+    console.log(`Token ID: ${id.toString()}`);
+    console.log(`Amount: ${value.toString()}`);
+  });
+
+  catContract.on("TransferBatch", (operator, from, to, ids, values) => {
+    console.log(`--- TransferBatch Event ---`);
+    console.log(`Operator: ${operator}`);
+    console.log(`From: ${from}`);
+    console.log(`To: ${to}`);
+    console.log(`Token IDs: ${ids.map(id => id.toString()).join(', ')}`);
+    console.log(`Amounts: ${values.map(val => val.toString()).join(', ')}`);
+  });
+};
 
 export function getCatContractAbiFromHardhat() {
   const jsonFile = join(__dirname, abi_path);
