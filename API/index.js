@@ -5,7 +5,7 @@ const app = express();
 import authentification from "./routes/authentification.js"; 
 
 app.get("/", (req, res) => {
-  res.send("Hello World222hhh2!");
+  res.send("Hello World Bienvenu dans l'API CAT!");
 });
 
 app.use("/authentification", authentification)

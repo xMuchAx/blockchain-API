@@ -3,69 +3,92 @@ const router = express.Router();
 import { getCatTokenQuantity } from "../../contract_service/cat_contract.js";
 const POLYGON_SERVER = "https://rpc-amoy.polygon.technology/";
 const CAT_TOKEN_0 = 0;
-import { pool } from "./database.js";
-import bcrypt from "bcrypt";
+import { pool } from "../../database.js"; // Importing the database connection pool
+import bcrypt from "bcrypt"; // Importing bcrypt for password hashing
+import jwt from 'jsonwebtoken'; // Importing jsonwebtoken for JWT handling
+const SECRET_KEY = 'blockchain-jwt-key'; // Secret key used for signing JWTs
 
-// route to get all user info (ca recup que les token pour l'instant)
+// Route to get the token quantity for a specific account
 router.get("/:tokenAccount", async (req, res) => {
   try {
+    // Call the function to get the token quantity on the Polygon network
     const AccountTokenQty = await getCatTokenQuantity(
       POLYGON_SERVER,
       req.params.tokenAccount,
       CAT_TOKEN_0
     );
 
+    // Send a success response with the token quantity
     res.status(200).json({
-      Account: `this account contain: ${AccountTokenQty}`,
+      Account: `this account contains: ${AccountTokenQty}`,
     });
   } catch (error) {
+    // Handle errors
     res.status(500).json({ error: error.message });
   }
 });
 
-// Route pour l'inscription d'un utilisateur
-router.get("/register/:username/:email/:password", async (req, res) => {
+// Route to register a new user
+router.post("/register", async (req, res) => {
   try {
-    // const { username, email, password } = req.body;
-    const email = req.params.email;
+    const { username, email, password } = req.body;
 
-    // Vérification si l'utilisateur existe déjà
+    // Check if the user already exists in the database
     const existingUser = await pool.query(
-      "SELECT * FROM cat_users WHERE email = $1",
+      "SELECT * FROM users WHERE email = $1",
       [email]
     );
 
     if (existingUser.rows.length > 0) {
-      return res.status(400).json({ message: "Cet email est déjà utilisé." });
+      return res.status(400).json({ message: "This email is already in use." });
     }
 
-    // Hachage du mot de passe
+    // Hash the password using bcrypt
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.params.password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Création du nouvel utilisateur
+    // Create a new user in the database with the hashed password
     const newUser = await pool.query(
-      "INSERT INTO cat_users (username, email, password,public_address,private_key) VALUES ($1, $2, $3,'','')",
-      [req.params.username, req.params.email, hashedPassword]
+      "INSERT INTO users (username, email, password,public_address,private_key) VALUES ($1, $2, $3,'','')",
+      [username, email, hashedPassword]
     );
 
+    // Send a success response
     res.status(201).json({
-      message: "Utilisateur créé avec succès",
+      message: "User successfully created",
       user: newUser.rows[0],
     });
   } catch (error) {
-    console.error("Erreur lors de l'inscription:", error);
-    res
-      .status(500)
-      .json({ message: "Erreur lors de l'inscription de l'utilisateur" });
+    // Handle errors during registration
+    console.error("Error during registration:", error);
+    res.status(500).json({ message: "Error registering user" });
   }
 });
 
-router.get("/login/:username", async (req, res) => {
-  const result = await pool.query(
-    `SELECT * from cat_users where username = '${req.params.username}'`
-  );
-  res.status(200).json(result.rows);
+// Route to login a user
+router.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+  
+    try {
+      // Check if the username and password match in the database
+      const result = await pool.query(
+        'SELECT * FROM users WHERE username = $1 AND password = $2',
+        [req.params.username, req.params.mdp]
+      );
+  
+      if (result.rows.length > 0) {
+        // Generate a JWT token if the login is successful
+        const token = jwt.sign({ username: req.params.username }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({ token });
+      } else {
+        // Send an error response if the username or password is incorrect
+        res.status(401).json({ message: 'Incorrect username or password' });
+      }
+    } catch (error) {
+      // Handle errors during login
+      console.error('Error during login:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
 });
 
 export default router;

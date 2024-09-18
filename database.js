@@ -8,7 +8,7 @@ export const pool = new Pool({
   password: '4C8fV7fQeUinwP6kCjn9yH19mrhzCYTk',
   port: 5432,
   ssl: {
-    rejectUnauthorized: false  // Important pour accepter des certificats auto-signés
+    rejectUnauthorized: false  
   }
 })
 
