@@ -4,10 +4,11 @@ export const contract_adress = process.env.CONTRACT_ADRESS
 const app = express();
 import users from "./routes/users.js"; 
 
-
 app.get("/", (req, res) => {
   res.send("Hello World2222!");
 });
+
+
 
 
 app.use("/users", users)

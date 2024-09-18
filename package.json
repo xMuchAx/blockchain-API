@@ -2,20 +2,19 @@
   "name": "wallet",
   "version": "1.0.0",
   "main": "index.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
-    "start":"nodemon API/index.js",
+    "start": "nodemon API/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "description": "",
-  "devDependencies": {
-  },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.2",
     "ethers": "^6.13.2",
     "express": "^4.21.0",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "pg": "^8.13.0"
   }
 }
