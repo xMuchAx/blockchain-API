@@ -2,8 +2,14 @@ import { ethers } from "ethers";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { contract_adress } from "../API/index.js";
-const __dirname = import.meta.dirname;
-const abi_path = "./abi.json"
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// __dirname en mode ES6
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const abi_path = "../contract_service/abi.json";
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Helpers specific to the Cat contract
@@ -11,6 +17,7 @@ const abi_path = "./abi.json"
 
 // For read only operation on the contract
 // No need of an account to read data from the blockchain
+
 export function getReadOnlyCatContract(
   blockchainServerUrl,
   catContractDeployedAddress
@@ -58,32 +65,50 @@ function getCatContract(
     contractRunner
   );
 
-  listenToTransferEvents(contract);
   return contract;
 }
 
-const listenToTransferEvents = (catContract) => {
-  let transferSingleCount = 0;
+export async function getCatTokenTransfersForUser(blockchainServerUrl, tokenAccount) {
+  const catContract = getReadOnlyCatContract(
+    blockchainServerUrl,
+    getCatContractDeployedAddressFromHardhat()
+  );
 
-  catContract.on("TransferSingle", (operator, from, to, id, value) => {
-    transferSingleCount++;
-    console.log(`--- TransferSingle Event #${transferSingleCount} ---`);
-    console.log(`Operator: ${operator}`);
-    console.log(`From: ${from}`);
-    console.log(`To: ${to}`);
-    console.log(`Token ID: ${id.toString()}`);
-    console.log(`Amount: ${value.toString()}`);
+  const filterSingle = catContract.filters.TransferSingle(null, null, tokenAccount);
+  const filterBatch = catContract.filters.TransferBatch(null, null, tokenAccount);
+
+  const transferSingleEvents = await catContract.queryFilter(filterSingle);
+  const transferBatchEvents = await catContract.queryFilter(filterBatch);
+
+  let userTransfers = [];
+
+  transferSingleEvents.forEach(event => {
+    const { operator, from, to, id, value } = event.args;
+    userTransfers.push({
+      operator,
+      from,
+      to,
+      tokenId: id.toString(),
+      amount: value.toString(),
+    });
   });
 
-  catContract.on("TransferBatch", (operator, from, to, ids, values) => {
-    console.log(`--- TransferBatch Event ---`);
-    console.log(`Operator: ${operator}`);
-    console.log(`From: ${from}`);
-    console.log(`To: ${to}`);
-    console.log(`Token IDs: ${ids.map(id => id.toString()).join(', ')}`);
-    console.log(`Amounts: ${values.map(val => val.toString()).join(', ')}`);
+  transferBatchEvents.forEach(event => {
+    const { operator, from, to, ids, values } = event.args;
+    ids.forEach((id, index) => {
+      userTransfers.push({
+        operator,
+        from,
+        to,
+        tokenId: id.toString(),
+        amount: values[index].toString(),
+      });
+    });
   });
-};
+
+  return userTransfers;
+}
+
 
 export function getCatContractAbiFromHardhat() {
   const jsonFile = join(__dirname, abi_path);
@@ -94,9 +119,13 @@ export function getCatContractAbiFromHardhat() {
 }
 
 export function getCatContractDeployedAddressFromHardhat() {
-  const deployedAddress = contract_adress;
+  const deployedAddress = contract_adress;  
+  if (!deployedAddress) {
+    throw new Error("L'adresse du contrat est manquante ou nulle");
+  }
   return deployedAddress;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Services provided by the Cat contract
