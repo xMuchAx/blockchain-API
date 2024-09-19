@@ -5,13 +5,21 @@ const app = express();
 import authentification from "./routes/authentification.js"; 
 import token from "./routes/token.js"
 
-app.get("/", (req, res) => {
-  res.send("Hello World Bienvenu dans l'API CAT!");
-});
+import cors from "cors"
+import bodyParser from "body-parser"
+
+app.options('*', cors()) 
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 app.use("/authentification", authentification)
 
 app.use("/token", token)
+
+app.get("/", (req, res) => {
+  res.send("Hello World Bienvenu dans l'API CAT!");
+});
 
 app.listen(port, () => {
   console.log(`Serveur is online on port ${port}`);

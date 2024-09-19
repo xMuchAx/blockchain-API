@@ -1,11 +1,13 @@
 import express from "express";
 const router = express.Router();
-import { transferCatToken, getCatTokenTransfersForUser as getTransfersForUser } from "../../contract_service/cat_contract.js";
+import { transferCatToken, getTokenTransfersForUser } from "../../contract_service/cat_contract.js";
 const POLYGON_SERVER = "https://rpc-amoy.polygon.technology/"; // URL for the Polygon blockchain server
 const CAT_TOKEN_0 = 0; // Token identifier for CAT_TOKEN
+import authenticateToken from "../../middleware/authenticateToken.js";
+
 
 // Route to transfer tokens between two accounts
-router.post("/transferToken", async (req, res) => {
+router.post("/transferToken", authenticateToken ,async (req, res) => {
     try {
         const { tokenPrivateAccount, tokenAccountFrom, tokenAccountTo, tokenQty } = req.body;
 
@@ -39,16 +41,15 @@ router.post("/transferToken", async (req, res) => {
         });
 
     } catch (error) {
-        // Error handling
+        // Error occurred while transferring tokens
         res.status(500).json({
-            error: error.message,
-            details: "An error occurred while transferring tokens."
+            error: "Error occurred while transferring tokens.",
         });
     }
 });
 
 // Route to add tokens to a specific account
-router.post("/addToken", async (req, res) => {
+router.post("/addToken", authenticateToken , async (req, res) => {
     const { tokenPrivateAccount, tokenAccount, tokenQty } = req.body;
 
     try {
@@ -59,15 +60,15 @@ router.post("/addToken", async (req, res) => {
             Account: `Successfully added`,
         });
     } catch (error) {
-        // Handle errors
+        //Error during add token
         res.status(500).json({
-            error: error.message
+            error: "Error during add token"
         });
     }
 });
 
 // Route to remove tokens from an account (burn tokens)
-router.post("/removeToken", async (req, res) => {
+router.post("/removeToken", authenticateToken ,async (req, res) => {
     const { tokenPrivateAccount, tokenAccount, tokenQty } = req.body;
 
     try {
@@ -78,26 +79,26 @@ router.post("/removeToken", async (req, res) => {
             Account: `Removal done successfully`,
         });
     } catch (error) {
-        // Error handling
+        // Error during delete token
         res.status(500).json({
-            error: error.message,
+            error: "Error during delete token"
         });
     }
 });
 
 // Route to get the token transfer history for a specific account
-router.get("/transactions/:tokenAccount", async (req, res) => {
+router.get("/transactions/:tokenAccount",authenticateToken, async (req, res) => {
     try {
       const tokenAccount = req.params.tokenAccount;
 
       // Retrieve the transfer history for the account
-      const transfers = await getTransfersForUser(POLYGON_SERVER, tokenAccount);
+      const transfers = await getTokenTransfersForUser(POLYGON_SERVER, tokenAccount);
       res.status(200).json({
         transfers: transfers,
       });
     } catch (error) {
-        console.error("Error while fetching transfers:", error);
-      res.status(500).json({ error: error.message });
+      // Error while fetching transfers
+      res.status(500).json({ error: "Error while fetching transfers" });
     }
 });
 
