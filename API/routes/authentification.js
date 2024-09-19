@@ -75,25 +75,25 @@ router.post("/register", async (req, res) => {
 // Route to login a user
 router.post('/login', async (req, res) => {
 
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    // Check if the username and password match in the database
+    // Check if the email and password match in the database
     const result = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND password = $2',
-      [username, password]
+      'SELECT * FROM users WHERE email = $1 AND password = $2',
+      [email, password]
     );
   
     if (result.rows.length > 0) {
       // Generate a JWT token if the login is successful
-      const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
+      const token = jwt.sign({ email: email }, SECRET_KEY, { expiresIn: '1h' });
       res.json({
         user: result.rows[0],
         token: token
       });
     } else {
-      // Send an error response if the username or password is incorrect
-      res.status(401).json({ error: 'Incorrect username or password' });
+      // Send an error response if the email or password is incorrect
+      res.status(401).json({ error: 'Incorrect email or password' });
     }
   } catch (error) {
     // Errors during login
