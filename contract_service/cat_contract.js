@@ -154,4 +154,29 @@ export async function addToken(blockchainServerUrl,
   await catContract.mint(tokenAccountTo, tokenId, tokenQty);
 }
 
+export async function getCatTokenTransfersForUser(blockchainServerUrl, tokenAccount) {
+  const catContract = getReadOnlyCatContract(
+    blockchainServerUrl,
+    getCatContractDeployedAddressFromHardhat()
+  );
+
+  const filterSingle = catContract.filters.TransferSingle(null, null, tokenAccount);
+
+  const transferSingleEvents = await catContract.queryFilter(filterSingle);
+
+  let userTransfers = [];
+
+  transferSingleEvents.forEach(event => {
+    const { operator, from, to, id, value } = event.args;
+    userTransfers.push({
+      operator,
+      from,
+      to,
+      tokenId: id.toString(),
+      amount: value.toString(),
+    });
+  });
+
+  return userTransfers;
+}
 
