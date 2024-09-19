@@ -10,7 +10,10 @@ import bodyParser from "body-parser"
 
 app.options('*', cors()) 
 
+app.use(cors())
+
 app.use(bodyParser.urlencoded({ extended: false }))
+
 app.use(bodyParser.json())
 
 app.use("/authentification", authentification)
