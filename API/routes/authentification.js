@@ -44,16 +44,28 @@ router.post("/register", async (req, res) => {
     // const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create a new user in the database with the hashed password
-    const newUser = await pool.query(
+    await pool.query(
       "INSERT INTO users (username, email, password,public_address,private_key) VALUES ($1, $2, $3,'','')",
       [username, email, password]
     );
 
-    // Send a success response
-    res.status(201).json({
-      message: "User successfully created",
-      user: newUser.rows[0],
-    });
+    const userCreated = await pool.query(
+      'SELECT * FROM users WHERE username = $1 AND password = $2',
+      [username, password]
+    );
+
+    if (userCreated.rows.length > 0) {
+      // Generate a JWT token if the register is successful
+      const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
+    
+      // Send a success response
+      res.status(201).json({
+        message: "User successfully created",
+        user: userCreated.rows[0],
+        token: token
+      });
+    }
+
   } catch (error) {
     // Errors during registration
     res.status(500).json({ error: "Errors during registration" });
