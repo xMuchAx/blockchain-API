@@ -1,31 +1,25 @@
 import express from "express";
 const router = express.Router();
-import { getCatTokenQuantity } from "../../contract_service/cat_contract.js";
-const POLYGON_SERVER = "https://rpc-amoy.polygon.technology/";
-const CAT_TOKEN_0 = 0;
 import { pool } from "../../database.js"; // Importing the database connection pool
 import bcrypt from "bcrypt"; // Importing bcrypt for password hashing
 import jwt from 'jsonwebtoken'; // Importing jsonwebtoken for JWT handling
 const SECRET_KEY = 'blockchain-jwt-key'; // Secret key used for signing JWTs
 
-// Route to get the token quantity for a specific account
-router.get("/:tokenAccount", async (req, res) => {
+// Route to get all users from database
+router.get("/getAllUsers", async (req, res) => {
+  
   try {
-    // Call the function to get the token quantity on the Polygon network
-    const AccountTokenQty = await getCatTokenQuantity(
-      POLYGON_SERVER,
-      req.params.tokenAccount,
-      CAT_TOKEN_0
+    // get all users from the database
+    const result = await pool.query(
+      'SELECT * FROM users',
     );
 
-    // Send a success response with the token quantity
-    res.status(200).json({
-      Account: `this account contains: ${AccountTokenQty}`,
-    });
+    res.status(200).json({users:result.rows})
   } catch (error) {
-    // Handle errors
-    res.status(500).json({ error: error.message });
+    // Handle errors during fetch users
+    res.status(500).json({ message: error.message });
   }
+
 });
 
 // Route to register a new user
@@ -60,8 +54,7 @@ router.post("/register", async (req, res) => {
     });
   } catch (error) {
     // Handle errors during registration
-    console.error("Error during registration:", error);
-    res.status(500).json({ message: "Error registering user" });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -73,21 +66,23 @@ router.post('/login', async (req, res) => {
       // Check if the username and password match in the database
       const result = await pool.query(
         'SELECT * FROM users WHERE username = $1 AND password = $2',
-        [req.params.username, req.params.mdp]
+        [username, password]
       );
   
       if (result.rows.length > 0) {
         // Generate a JWT token if the login is successful
-        const token = jwt.sign({ username: req.params.username }, SECRET_KEY, { expiresIn: '1h' });
-        res.json({ token });
-      } else {
+        const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({
+          user: result.rows[0],
+          token: token
+        });
+        } else {
         // Send an error response if the username or password is incorrect
         res.status(401).json({ message: 'Incorrect username or password' });
       }
     } catch (error) {
       // Handle errors during login
-      console.error('Error during login:', error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: error.message });
     }
 });
 
