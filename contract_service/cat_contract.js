@@ -154,7 +154,7 @@ export async function addToken(blockchainServerUrl,
   await catContract.mint(tokenAccountTo, tokenId, tokenQty);
 }
 
-export async function getCatTokenTransfersForUser(blockchainServerUrl, tokenAccount) {
+export async function getTokenTransfersForUser(blockchainServerUrl, tokenAccount) {
   const catContract = getReadOnlyCatContract(
     blockchainServerUrl,
     getCatContractDeployedAddressFromHardhat()
