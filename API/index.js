@@ -43,6 +43,7 @@ const swaggerOptions = {
 };
 
 const specs = swaggerJsdoc(swaggerOptions);
+app.use(cors())
 
 app.options('*', cors())
 
