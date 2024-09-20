@@ -58,6 +58,7 @@ router.get("/getAllUsers", authenticateToken , async (req, res) => {
 
 });
 
+
 /**
  * @swagger
  * /authentification/register:
@@ -83,8 +84,16 @@ router.get("/getAllUsers", authenticateToken , async (req, res) => {
  *                 type: string
  *                 description: The password for the new user.
  *                 example: "P@ssw0rd!"
+ *               public_address:
+ *                 type: string
+ *                 description: The public address for the user's account.
+ *                 example: "0x1234567890abcdef1234567890abcdef12345678"
+ *               private_key:
+ *                 type: string
+ *                 description: The private key for the user's account.
+ *                 example: "0xabcdef1234567890abcdef1234567890abcdef12"
  *     responses:
- *       201:
+ *       200:
  *         description: User successfully created
  *         content:
  *           application/json:
@@ -128,7 +137,6 @@ router.get("/getAllUsers", authenticateToken , async (req, res) => {
  *                   type: string
  *                   example: "Errors during registration"
  */
-
 // Route to register a new user
 router.post("/register", async (req, res) => {
   try {
@@ -155,8 +163,8 @@ router.post("/register", async (req, res) => {
     );
 
     const userCreated = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND password = $2',
-      [username, password]
+      'SELECT * FROM users WHERE email = $1 AND password = $2',
+      [email, password]
     );
 
     if (userCreated.rows.length > 0) {

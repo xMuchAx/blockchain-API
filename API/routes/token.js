@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import { transferCatToken, getTokenTransfersForUser, getCatTokenQuantity } from "../../contract_service/cat_contract.js";
+import { transferCatToken,addCatToken, burnableCatToken, getTokenTransfersForUser, getCatTokenQuantity } from "../../contract_service/cat_contract.js";
 const POLYGON_SERVER = "https://rpc-amoy.polygon.technology/"; // URL for the Polygon blockchain server
 const CAT_TOKEN_0 = 0; // Token identifier for CAT_TOKEN
 import authenticateToken from "../../middleware/authenticateToken.js";
@@ -10,10 +10,8 @@ import authenticateToken from "../../middleware/authenticateToken.js";
  * @swagger
  * /token/transferToken:
  *   post:
- *     summary: Transfer tokens between two accounts
- *     description: Transfers a specified quantity of tokens from one account to another on the Polygon blockchain.
- *     security:
- *       - bearerAuth: []
+ *     summary: Transfer tokens between accounts
+ *     description: Transfers a specified quantity of tokens from one account to another using the provided private account and addresses.
  *     requestBody:
  *       required: true
  *       content:
@@ -23,23 +21,23 @@ import authenticateToken from "../../middleware/authenticateToken.js";
  *             properties:
  *               tokenPrivateAccount:
  *                 type: string
- *                 description: The private key of the account making the transfer.
- *                 example: "0xabc123..."
+ *                 description: The private account used for the token transfer.
+ *                 example: "0x12345abcde..."
  *               tokenAccountFrom:
  *                 type: string
- *                 description: The public address of the sender's account.
- *                 example: "0xdef456..."
+ *                 description: The account from which tokens are transferred.
+ *                 example: "0xabcde12345..."
  *               tokenAccountTo:
  *                 type: string
- *                 description: The public address of the recipient's account.
- *                 example: "0xghi789..."
+ *                 description: The account to which tokens are transferred.
+ *                 example: "0x54321edcba..."
  *               tokenQty:
  *                 type: number
- *                 description: The quantity of tokens to be transferred.
- *                 example: 100
+ *                 description: The quantity of tokens to transfer.
+ *                 example: 10
  *     responses:
  *       200:
- *         description: Tokens successfully transferred
+ *         description: Successfully transferred tokens
  *         content:
  *           application/json:
  *             schema:
@@ -47,9 +45,9 @@ import authenticateToken from "../../middleware/authenticateToken.js";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Successfully transferred 100 tokens from 0xdef456... to 0xghi789..."
+ *                   example: "Successfully transferred 10 tokens from 0xabcde12345... to 0x54321edcba..."
  *       400:
- *         description: Missing or invalid parameters
+ *         description: Missing required parameters or invalid token quantity
  *         content:
  *           application/json:
  *             schema:
@@ -59,7 +57,7 @@ import authenticateToken from "../../middleware/authenticateToken.js";
  *                   type: string
  *                   example: "Missing required parameters: tokenPrivateAccount, tokenAccountFrom, tokenAccountTo, tokenQty"
  *       500:
- *         description: Server error during token transfer
+ *         description: Error occurred while transferring tokens
  *         content:
  *           application/json:
  *             schema:
@@ -112,14 +110,13 @@ router.post("/transferToken", authenticateToken ,async (req, res) => {
     }
 });
 
+
 /**
  * @swagger
  * /token/addToken:
  *   post:
- *     summary: Add tokens to a specific account
- *     description: Adds a specified quantity of tokens to a given account on the Polygon blockchain.
- *     security:
- *       - bearerAuth: []
+ *     summary: Add tokens to an account
+ *     description: Adds a specified quantity of tokens to a given account using the provided private account.
  *     requestBody:
  *       required: true
  *       content:
@@ -129,19 +126,19 @@ router.post("/transferToken", authenticateToken ,async (req, res) => {
  *             properties:
  *               tokenPrivateAccount:
  *                 type: string
- *                 description: The private key of the account adding the tokens.
- *                 example: "0xabc123..."
+ *                 description: The private account used for adding tokens.
+ *                 example: "0x12345abcde..."
  *               tokenAccount:
  *                 type: string
- *                 description: The public address of the account to which tokens will be added.
- *                 example: "0xdef456..."
+ *                 description: The account to which tokens will be added.
+ *                 example: "0xabcde12345..."
  *               tokenQty:
  *                 type: number
- *                 description: The quantity of tokens to be added.
- *                 example: 500
+ *                 description: The quantity of tokens to add.
+ *                 example: 10
  *     responses:
  *       200:
- *         description: Tokens successfully added to the account
+ *         description: Successfully added tokens
  *         content:
  *           application/json:
  *             schema:
@@ -151,7 +148,7 @@ router.post("/transferToken", authenticateToken ,async (req, res) => {
  *                   type: string
  *                   example: "Successfully added"
  *       500:
- *         description: Error during token addition
+ *         description: Error occurred during token addition
  *         content:
  *           application/json:
  *             schema:
@@ -161,7 +158,6 @@ router.post("/transferToken", authenticateToken ,async (req, res) => {
  *                   type: string
  *                   example: "Error during add token"
  */
-
 // Route to add tokens to a specific account
 router.post("/addToken", authenticateToken , async (req, res) => {
     const { tokenPrivateAccount, tokenAccount, tokenQty } = req.body;
@@ -181,14 +177,13 @@ router.post("/addToken", authenticateToken , async (req, res) => {
     }
 });
 
+
 /**
  * @swagger
  * /token/removeToken:
  *   post:
- *     summary: Remove tokens from a specific account (burn tokens)
- *     description: Burns a specified quantity of tokens from a given account on the Polygon blockchain.
- *     security:
- *       - bearerAuth: []
+ *     summary: Remove tokens from an account
+ *     description: Burns a specified quantity of tokens from a given account using the provided private account.
  *     requestBody:
  *       required: true
  *       content:
@@ -198,19 +193,19 @@ router.post("/addToken", authenticateToken , async (req, res) => {
  *             properties:
  *               tokenPrivateAccount:
  *                 type: string
- *                 description: The private key of the account removing the tokens.
- *                 example: "0xabc123..."
+ *                 description: The private account used for removing tokens.
+ *                 example: "0x12345abcde..."
  *               tokenAccount:
  *                 type: string
- *                 description: The public address of the account from which tokens will be removed.
- *                 example: "0xdef456..."
+ *                 description: The account from which tokens will be removed.
+ *                 example: "0xabcde12345..."
  *               tokenQty:
  *                 type: number
- *                 description: The quantity of tokens to be removed (burned).
- *                 example: 300
+ *                 description: The quantity of tokens to remove.
+ *                 example: 5
  *     responses:
  *       200:
- *         description: Tokens successfully removed from the account
+ *         description: Successfully removed tokens
  *         content:
  *           application/json:
  *             schema:
@@ -220,7 +215,7 @@ router.post("/addToken", authenticateToken , async (req, res) => {
  *                   type: string
  *                   example: "Removal done successfully"
  *       500:
- *         description: Error during token removal
+ *         description: Error occurred during token removal
  *         content:
  *           application/json:
  *             schema:
@@ -230,7 +225,6 @@ router.post("/addToken", authenticateToken , async (req, res) => {
  *                   type: string
  *                   example: "Error during delete token"
  */
-
 // Route to remove tokens from an account (burn tokens)
 router.post("/removeToken", authenticateToken ,async (req, res) => {
     const { tokenPrivateAccount, tokenAccount, tokenQty } = req.body;
@@ -254,21 +248,19 @@ router.post("/removeToken", authenticateToken ,async (req, res) => {
  * @swagger
  * /token/transactions/{tokenAccount}:
  *   get:
- *     summary: Get transaction history for a token account
- *     description: Retrieves the token transfer history for a specific account on the Polygon blockchain.
- *     security:
- *       - bearerAuth: []
+ *     summary: Retrieve transaction history for a user account
+ *     description: Fetches the transfer history of a specified token account.
  *     parameters:
- *       - in: path
- *         name: tokenAccount
+ *       - name: tokenAccount
+ *         in: path
  *         required: true
+ *         description: The account for which to retrieve transaction history.
  *         schema:
  *           type: string
- *         description: The public address of the account to retrieve transaction history for.
- *         example: "0xabc123..."
+ *           example: "0xabcde12345..."
  *     responses:
  *       200:
- *         description: Successfully retrieved transaction history.
+ *         description: Successfully retrieved transaction history
  *         content:
  *           application/json:
  *             schema:
@@ -278,22 +270,25 @@ router.post("/removeToken", authenticateToken ,async (req, res) => {
  *                   type: array
  *                   items:
  *                     type: object
- *                   example: [
- *                     {
- *                       "from": "0xabc123...",
- *                       "to": "0xdef456...",
- *                       "amount": 100,
- *                       "timestamp": "2023-09-15T10:00:00Z"
- *                     },
- *                     {
- *                       "from": "0xdef456...",
- *                       "to": "0xghi789...",
- *                       "amount": 50,
- *                       "timestamp": "2023-09-16T12:00:00Z"
- *                     }
- *                   ]
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       from:
+ *                         type: string
+ *                         example: "0x12345abcde..."
+ *                       to:
+ *                         type: string
+ *                         example: "0xabcde12345..."
+ *                       quantity:
+ *                         type: number
+ *                         example: 5
+ *                       timestamp:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-09-20T14:28:00Z"
  *       500:
- *         description: Error while fetching transfers
+ *         description: Error occurred while fetching transfers
  *         content:
  *           application/json:
  *             schema:
@@ -303,7 +298,6 @@ router.post("/removeToken", authenticateToken ,async (req, res) => {
  *                   type: string
  *                   example: "Error while fetching transfers"
  */
-
 // Route to get the token transfer history for a specific account
 router.get("/transactions/:tokenAccount",authenticateToken, async (req, res) => {
     try {
@@ -320,6 +314,42 @@ router.get("/transactions/:tokenAccount",authenticateToken, async (req, res) => 
     }
 });
 
+/**
+ * @swagger
+ * /token/getTokenOfUser/{tokenAccount}:
+ *   get:
+ *     summary: Retrieve token quantity for a user account
+ *     description: Fetches the quantity of a specific token for the given user account.
+ *     parameters:
+ *       - name: tokenAccount
+ *         in: path
+ *         required: true
+ *         description: The account for which to retrieve the token quantity.
+ *         schema:
+ *           type: string
+ *           example: "0xabcde12345..."
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved token quantity
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 nbToken:
+ *                   type: integer
+ *                   example: 10
+ *       500:
+ *         description: Error occurred while fetching token quantity
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error to get token from user"
+ */
 router.get("/getTokenOfUser/:tokenAccount", authenticateToken ,async (req,res)=>{
     try{
         const nbToken = getCatTokenQuantity(POLYGON_SERVER, req.params.tokenAccount, CAT_TOKEN_0)

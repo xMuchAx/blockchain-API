@@ -140,7 +140,7 @@ export async function burnableCatToken(blockchainServerUrl, ownerPrivateKey, tok
 }
 
 //function to add token from an account
-export async function addToken(blockchainServerUrl,
+export async function addCatToken(blockchainServerUrl,
   ownerPrivateKey,
   tokenAccountTo,
   tokenId,
