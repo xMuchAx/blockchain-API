@@ -23,7 +23,21 @@ const swaggerOptions = {
         name: "Cat API"
       },
       servers: ["http://localhost:3000"]
-    }
+    },
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT" // Specify that it's a JWT token
+        }
+      }
+    },
+    security: [
+      {
+        BearerAuth: []
+      }
+    ]
   },
   apis: ["./API/routes/*.js"]
 };
@@ -31,8 +45,6 @@ const swaggerOptions = {
 const specs = swaggerJsdoc(swaggerOptions);
 
 app.options('*', cors())
-
-app.use(cors())
 
 app.use(bodyParser.urlencoded({ extended: false }))
 

@@ -13,6 +13,8 @@ const SECRET_KEY = 'blockchain-jwt-key'; // Secret key used for signing JWTs
  *   get:
  *     summary: Retrieve all users
  *     description: Retrieve a list of all users from the database.
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: A list of users
@@ -41,7 +43,7 @@ const SECRET_KEY = 'blockchain-jwt-key'; // Secret key used for signing JWTs
  */
 // Route to get all users from database
 router.get("/getAllUsers", authenticateToken , async (req, res) => {
-  
+
   try {
     // get all users from the database
     const result = await pool.query(
@@ -188,10 +190,10 @@ router.post("/register", async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               email:
  *                 type: string
  *                 description: The username for the user.
- *                 example: "john_doe"
+ *                 example: "john@example.org"
  *               password:
  *                 type: string
  *                 description: The password for the user.
@@ -241,22 +243,23 @@ router.post("/register", async (req, res) => {
 // Route to login a user
 router.post('/login', async (req, res) => {
 
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Check if the username and password match in the database
     const result = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND password = $2',
-      [username, password]
+      'SELECT * FROM users WHERE email = $1 AND password = $2',
+      [email, password]
     );
   
     if (result.rows.length > 0) {
       // Generate a JWT token if the login is successful
-      const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
+      const token = jwt.sign({ email: email }, SECRET_KEY, { expiresIn: '1h' });
       res.json({
         user: result.rows[0],
         token: token
       });
+      console.log("User successfully logged in", token);
     } else {
       // Send an error response if the username or password is incorrect
       res.status(401).json({ error: 'Incorrect username or password' });
