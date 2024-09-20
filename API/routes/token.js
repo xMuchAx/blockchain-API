@@ -352,9 +352,10 @@ router.get("/transactions/:tokenAccount",authenticateToken, async (req, res) => 
  */
 router.get("/getTokenOfUser/:tokenAccount", authenticateToken ,async (req,res)=>{
     try{
-        const nbToken = getCatTokenQuantity(POLYGON_SERVER, req.params.tokenAccount, CAT_TOKEN_0)
+        const nbToken = await getCatTokenQuantity(POLYGON_SERVER, req.params.tokenAccount, CAT_TOKEN_0)
+        console.log("Get token of user", nbToken)
         res.status(200).json({
-            nbToken: nbToken > 0 ? nbToken : 0
+            nbToken: nbToken > 0 ? Number(nbToken) : 0
         })
     }catch(error){
         // Error to get token from user
