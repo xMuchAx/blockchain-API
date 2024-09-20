@@ -27,7 +27,7 @@ router.get("/getAllUsers", authenticateToken , async (req, res) => {
 // Route to register a new user
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, public_address, private_key } = req.body;
 
     // Check if the user already exists in the database
     const existingUser = await pool.query(
@@ -45,8 +45,8 @@ router.post("/register", async (req, res) => {
 
     // Create a new user in the database with the hashed password
     await pool.query(
-      "INSERT INTO users (username, email, password,public_address,private_key) VALUES ($1, $2, $3,'','')",
-      [username, email, password]
+      "INSERT INTO users (username, email, password, public_address, private_key) VALUES ($1, $2, $3, $4, $5)",
+      [username, email, password, public_address, private_key]
     );
 
     const userCreated = await pool.query(
@@ -59,7 +59,7 @@ router.post("/register", async (req, res) => {
       const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
     
       // Send a success response
-      res.status(201).json({
+      res.status(200).json({
         message: "User successfully created",
         user: userCreated.rows[0],
         token: token
