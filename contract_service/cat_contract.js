@@ -80,7 +80,6 @@ export function getCatContractDeployedAddressFromHardhat() {
 
 //function to get token quantity from an accout
 export async function getCatTokenQuantity(blockchainServerUrl, tokenAccount, tokenId) {
-  console.log(blockchainServerUrl)
 
   const catContract = getReadOnlyCatContract(
     blockchainServerUrl,
@@ -140,7 +139,7 @@ export async function burnableCatToken(blockchainServerUrl, ownerPrivateKey, tok
 }
 
 //function to add token from an account
-export async function addToken(blockchainServerUrl,
+export async function addCatToken(blockchainServerUrl,
   ownerPrivateKey,
   tokenAccountTo,
   tokenId,

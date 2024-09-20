@@ -7,6 +7,40 @@ import authenticateToken from "../../middleware/authenticateToken.js";
 const SECRET_KEY = 'blockchain-jwt-key'; // Secret key used for signing JWTs
 
 
+/**
+ * @swagger
+ * /authentification/getAllUsers:
+ *   get:
+ *     summary: Retrieve all users
+ *     description: Retrieve a list of all users from the database.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       username:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       public_address:
+ *                         type: string
+ *                       private_key:
+ *                         type: string
+ *       500:
+ *         description: Internal server error
+ */
 // Route to get all users from database
 router.get("/getAllUsers", authenticateToken , async (req, res) => {
   
@@ -24,6 +58,85 @@ router.get("/getAllUsers", authenticateToken , async (req, res) => {
 
 });
 
+
+/**
+ * @swagger
+ * /authentification/register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Creates a new user in the database. Checks if the email is already in use, and if not, hashes the password and stores the user in the database. A JWT token is generated upon successful registration.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: The username for the new user.
+ *                 example: "john_doe"
+ *               email:
+ *                 type: string
+ *                 description: The email for the new user.
+ *                 example: "john@example.com"
+ *               password:
+ *                 type: string
+ *                 description: The password for the new user.
+ *                 example: "P@ssw0rd!"
+ *               public_address:
+ *                 type: string
+ *                 description: The public address for the user's account.
+ *                 example: "0x1234567890abcdef1234567890abcdef12345678"
+ *               private_key:
+ *                 type: string
+ *                 description: The private key for the user's account.
+ *                 example: "0xabcdef1234567890abcdef1234567890abcdef12"
+ *     responses:
+ *       200:
+ *         description: User successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User successfully created"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     username:
+ *                       type: string
+ *                       example: "john_doe"
+ *                     email:
+ *                       type: string
+ *                       example: "john@example.com"
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for the newly registered user.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       400:
+ *         description: Email is already in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "This email is already in use."
+ *       500:
+ *         description: Server error during registration
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Errors during registration"
+ */
 // Route to register a new user
 router.post("/register", async (req, res) => {
   try {
@@ -50,8 +163,8 @@ router.post("/register", async (req, res) => {
     );
 
     const userCreated = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND password = $2',
-      [username, hashedPassword]
+      'SELECT * FROM users WHERE email = $1 AND password = $2',
+      [email, hashedPassword]
     );
 
     if (userCreated.rows.length > 0) {
@@ -72,6 +185,69 @@ router.post("/register", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /authentification/login:
+ *   post:
+ *     summary: Login a user
+ *     description: Authenticates a user by checking the username and password in the database. If successful, generates a JWT token.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The username for the user.
+ *                 example: "john@example.org"
+ *               password:
+ *                 type: string
+ *                 description: The password for the user.
+ *                 example: "P@ssw0rd!"
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated user and generated token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     username:
+ *                       type: string
+ *                       example: "john_doe"
+ *                     email:
+ *                       type: string
+ *                       example: "john@example.com"
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for the authenticated user.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       401:
+ *         description: Incorrect username or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Incorrect username or password"
+ *       500:
+ *         description: Server error during login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Errors during login"
+ */
 // Route to login a user
 router.post('/login', async (req, res) => {
 
