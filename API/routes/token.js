@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import { transferCatToken, getTokenTransfersForUser } from "../../contract_service/cat_contract.js";
+import { transferCatToken, getTokenTransfersForUser, getCatTokenQuantity } from "../../contract_service/cat_contract.js";
 const POLYGON_SERVER = "https://rpc-amoy.polygon.technology/"; // URL for the Polygon blockchain server
 const CAT_TOKEN_0 = 0; // Token identifier for CAT_TOKEN
 import authenticateToken from "../../middleware/authenticateToken.js";
@@ -319,5 +319,17 @@ router.get("/transactions/:tokenAccount",authenticateToken, async (req, res) => 
       res.status(500).json({ error: "Error while fetching transfers" });
     }
 });
+
+router.get("/getTokenOfUser/:tokenAccount", authenticateToken ,async (req,res)=>{
+    try{
+        const nbToken = getCatTokenQuantity(POLYGON_SERVER, req.params.tokenAccount, CAT_TOKEN_0)
+        res.status(200).json({
+            nbToken: nbToken > 0 ? nbToken : 0
+        })
+    }catch(error){
+        // Error to get token from user
+        res.status(500).json({ error: "Error to get token from user" });
+    }
+})
 
 export default router;
