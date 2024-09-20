@@ -40,18 +40,18 @@ router.post("/register", async (req, res) => {
     }
 
     // Hash the password using bcrypt
-    // const salt = await bcrypt.genSalt(10);
-    // const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create a new user in the database with the hashed password
     await pool.query(
       "INSERT INTO users (username, email, password, public_address, private_key) VALUES ($1, $2, $3, $4, $5)",
-      [username, email, password, public_address, private_key]
+      [username, email, hashedPassword, public_address, private_key]
     );
 
     const userCreated = await pool.query(
       'SELECT * FROM users WHERE username = $1 AND password = $2',
-      [username, password]
+      [username, hashedPassword]
     );
 
     if (userCreated.rows.length > 0) {
@@ -80,17 +80,18 @@ router.post('/login', async (req, res) => {
   try {
     // Check if the email and password match in the database
     const result = await pool.query(
-      'SELECT * FROM users WHERE email = $1 AND password = $2',
-      [email, password]
+      'SELECT * FROM users WHERE email = $1',
+      [email]
     );
-  
-    if (result.rows.length > 0) {
-      // Generate a JWT token if the login is successful
-      const token = jwt.sign({ email: email }, SECRET_KEY, { expiresIn: '1h' });
-      res.json({
-        user: result.rows[0],
-        token: token
-      });
+
+    const checkPass = await bcrypt.compare(password, result.rows[0].password);
+    if (result.rows.length > 0 && checkPass) {
+        // Generate a JWT token if the login is successful
+        const token = jwt.sign({ email: email }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({
+          user: result.rows[0],
+          token: token
+        });
     } else {
       // Send an error response if the email or password is incorrect
       res.status(401).json({ error: 'Incorrect email or password' });
